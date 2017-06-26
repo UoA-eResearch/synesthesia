@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Synesthesia</title>
+  <style>
+    html, body, video, canvas {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.0.1/color-thief.min.js"></script>
+</head>
+<body>
+  <video id="video">Video stream not available.</video>
+  <script type="text/javascript">
+    var processing = true;
+    var video = document.querySelector('video');
+    var colorThief = new ColorThief();
+    var mediaStream = false;
+    var s = 0;
+    var audioContext = new window.AudioContext();
+    var osc = audioContext.createOscillator();
+    osc.connect(audioContext.destination);
+    osc.start(0);
+    audioContext.suspend();
+    
+    function takepicture(video) {
+      // Write a frame to canvas
+      var canvas = document.createElement('canvas');
+      var context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+      return canvas;
+    }
+    
+    function getAverageColor(frame) {
+      var imageData = frame.getContext('2d').getImageData(0, 0, frame.width, frame.height);
+      var data = imageData.data;
+      var r=0, g=0, b=0, count=0;
+      for (var i = 0; i < data.length; i+=4) {
+        // RGBA
+        count++;
+        r += data[i];
+        g += data[i+1];
+        b += data[i+2];
+      }
+      return {r: r/count, g: g/count, b: b/count}
+    }
+    
+    function RGBtoHSV(r, g, b) {
+      if (arguments.length === 1) {
+          g = r.g, b = r.b, r = r.r;
+      }
+      var max = Math.max(r, g, b), min = Math.min(r, g, b),
+          d = max - min,
+          h,
+          s = (max === 0 ? 0 : d / max),
+          v = max / 255;
+
+      switch (max) {
+          case min: h = 0; break;
+          case r: h = (g - b) + d * (g < b ? 6: 0); h /= 6 * d; break;
+          case g: h = (b - r) + d * 2; h /= 6 * d; break;
+          case b: h = (r - g) + d * 4; h /= 6 * d; break;
+      }
+
+      return {
+          h: h,
+          s: s,
+          v: v
+      };
+    }
+
+    function getcam() {
+      navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: "environment",
+          width: {
+            ideal: 640
+          },
+          height: {
+            ideal: 480
+          }
+        }
+      })
+      .then(function(mediaStream) {
+        video.srcObject = mediaStream;
+        video.onloadedmetadata = function(e) {
+          video.play();
+          processing = false;
+          audioContext.resume();
+          window.mediaStream = mediaStream;
+        };
+      })
+      .catch(function(err) { console.log(err.name + ": " + err.message); }); // always check for errors at the end
+    }
+
+    getcam();
+    setInterval(function() {
+      // Main loop
+      if (!processing && (mediaStream && mediaStream.active)) {
+        processing = true;
+        console.log("0ms: Start");
+        s = performance.now();
+        var frame = takepicture(video);
+        var rgb = colorThief.getColor(frame);
+        rgb = {r: rgb[0], g: rgb[1], b: rgb[2]};
+        console.log(performance.now() - s + "ms: got color: ", rgb);
+        var hsv = RGBtoHSV(rgb);
+        console.log(hsv.h);
+        // Red low, blue high
+        osc.frequency.value = hsv.h * 500 + 100;
+        processing = false;
+      }
+    }, 500);
+
+    window.onfocus = function () {
+      getcam();
+      audioContext.resume();
+      console.log("cam on");
+    };
+
+    window.onblur = function () {
+      mediaStream.getTracks().forEach( (track) => {
+        track.stop();
+      });
+      audioContext.suspend();
+      processing = false;
+      console.log("cam off");
+    };
+  </script>
+</body>
+</html>
