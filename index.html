@@ -3,13 +3,18 @@
 <head>
   <title>Synesthesia</title>
   <style>
-    html, body, video, canvas {
+     video, canvas {
       height: 100%;
       margin: 0;
       padding: 0;
       position: absolute;
       left: 0;
+      top: 20px;
+    }
+    .freq {
+      position: absolute;
       top: 0;
+      left: 0;
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.0.1/color-thief.min.js"></script>
@@ -118,7 +123,7 @@
         document.body.style.backgroundColor = "hsl(" + hsv.h * 360 + ",100%,50%)";
         // Red low, blue high
         osc.frequency.value = hsv.h * 500 + 100;
-        document.getElementById('colorhsl').innerHTML = '<p>'+ Math.round(osc.frequency.value) +'Hz</p>';
+        document.getElementById('colorhsl').innerHTML =  Math.round(osc.frequency.value) +'Hz';
         processing = false;
       }
     }, 500);
