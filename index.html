@@ -114,6 +114,7 @@
         console.log(performance.now() - s + "ms: got color: ", rgb);
         var hsv = RGBtoHSV(rgb);
         console.log(hsv.h);
+        document.body.style.backgroundColor = "hsl(" + hsv.h * 360 + ",100%,50%)";
         // Red low, blue high
         osc.frequency.value = hsv.h * 500 + 100;
         processing = false;
