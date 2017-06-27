@@ -9,18 +9,18 @@
       padding: 0;
       position: absolute;
       left: 0;
-      top: 20px;
-    }
-    .freq {
-      position: absolute;
       top: 0;
-      left: 0;
+    }
+    #colorhsl {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 50px;
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.0.1/color-thief.min.js"></script>
 </head>
 <body>
-  <div id="colorhsl" class="freq"></div>
   <video id="video">Video stream not available.</video>
   <script type="text/javascript">
     var processing = true;
@@ -124,6 +124,7 @@
         // Red low, blue high
         osc.frequency.value = hsv.h * 500 + 100;
         document.getElementById('colorhsl').innerHTML =  Math.round(osc.frequency.value) +'Hz';
+        document.getElementById('colorhsl').style.backgroundColor = "hsl(" + hsv.h * 360 + ",100%,50%)";
         processing = false;
       }
     }, 500);
@@ -143,5 +144,6 @@
       console.log("cam off");
     };
   </script>
+  <div id="colorhsl"></div>
 </body>
 </html>
