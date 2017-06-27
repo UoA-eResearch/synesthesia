@@ -15,6 +15,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.0.1/color-thief.min.js"></script>
 </head>
 <body>
+  <div id="colorhsl" class="freq"></div>
   <video id="video">Video stream not available.</video>
   <script type="text/javascript">
     var processing = true;
@@ -117,6 +118,7 @@
         document.body.style.backgroundColor = "hsl(" + hsv.h * 360 + ",100%,50%)";
         // Red low, blue high
         osc.frequency.value = hsv.h * 500 + 100;
+        document.getElementById('colorhsl').innerHTML = '<p>'+ Math.round(osc.frequency.value) +'Hz</p>';
         processing = false;
       }
     }, 500);
